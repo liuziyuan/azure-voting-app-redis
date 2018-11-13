@@ -1,0 +1,71 @@
+
+
+{
+  "appId": "8ad1dded-a428-4834-87f7-b6dd04a29df1",
+  "displayName": "azure-cli-2018-11-13-02-45-03",
+  "name": "http://azure-cli-2018-11-13-02-45-03",
+  "password": "26c81067-50ab-4c17-a811-9343a19a9471",
+  "tenant": "91830b70-5976-45a0-958d-5c6c42a62d1e"
+}
+
+az role assignment create --assignee 8ad1dded-a428-4834-87f7-b6dd04a29df1 --scope /subscriptions/9f52089d-b469-4d68-a81f-9ee4bc327d02/resourceGroups/myResourceGroup/providers/Microsoft.ContainerRegistry/registries/avaLiuziyuan --role Reader
+
+az aks create \
+    --resource-group myResourceGroup \
+    --name myAKSCluster \
+    --node-count 1 \
+    --service-principal 8ad1dded-a428-4834-87f7-b6dd04a29df1 \
+    --client-secret 26c81067-50ab-4c17-a811-9343a19a9471 \
+    --generate-ssh-keys
+
+{
+  "aadProfile": null,
+  "addonProfiles": null,
+  "agentPoolProfiles": [
+    {
+      "count": 1,
+      "maxPods": 110,
+      "name": "nodepool1",
+      "osDiskSizeGb": 30,
+      "osType": "Linux",
+      "storageProfile": "ManagedDisks",
+      "vmSize": "Standard_DS2_v2",
+      "vnetSubnetId": null
+    }
+  ],
+  "dnsPrefix": "myAKSClust-myResourceGroup-9f5208",
+  "enableRbac": true,
+  "fqdn": "myaksclust-myresourcegroup-9f5208-4331559d.hcp.eastus.azmk8s.io",
+  "id": "/subscriptions/9f52089d-b469-4d68-a81f-9ee4bc327d02/resourcegroups/myResourceGroup/providers/Microsoft.ContainerService/managedClusters/myAKSCluster",
+  "kubernetesVersion": "1.9.11",
+  "linuxProfile": {
+    "adminUsername": "azureuser",
+    "ssh": {
+      "publicKeys": [
+        {
+          "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDL1/txqC2tBX5kA9o83JXKH7v0kuaP3SF0KFH8BqRCepguot47b+aCCeN3dgqHkaWgiB9hz42QPC0Zy2+2Db25usO6inhRuEQNTakH2SIrbYIb2OKVdL9xqCbBONBIwhjF/ONhIzvWe/D530nTKVpaT8J0DgQhqxPBYyuQrIzY+iekYktP+u1j/+0NG6E6Q6K2d/cWW6pcscVCoC6SzqEmiPwaEsG6iYhK1f1U9iDLpK9Vyc+E4T0Grqiwiee278nEMLS9/ZkbIifPXypsqkejpzrij5weZKlANkkriBPVUuKlsHFClCs5CKUfzNfGYD1Xf3SUiBuOXzvFVNyMqQRH"
+        }
+      ]
+    }
+  },
+  "location": "eastus",
+  "name": "myAKSCluster",
+  "networkProfile": {
+    "dnsServiceIp": "10.0.0.10",
+    "dockerBridgeCidr": "172.17.0.1/16",
+    "networkPlugin": "kubenet",
+    "networkPolicy": null,
+    "podCidr": "10.244.0.0/16",
+    "serviceCidr": "10.0.0.0/16"
+  },
+  "nodeResourceGroup": "MC_myResourceGroup_myAKSCluster_eastus",
+  "provisioningState": "Succeeded",
+  "resourceGroup": "myResourceGroup",
+  "servicePrincipalProfile": {
+    "clientId": "8ad1dded-a428-4834-87f7-b6dd04a29df1",
+    "secret": null
+  },
+  "tags": null,
+  "type": "Microsoft.ContainerService/ManagedClusters"
+}
+
