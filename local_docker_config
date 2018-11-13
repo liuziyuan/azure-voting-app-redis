@@ -1,0 +1,10 @@
+1. create container images
+docker-compose up -d
+
+2.test 
+docker images
+docker ps
+http://localhost:8080
+
+3. clean up resources
+docker-compose down
