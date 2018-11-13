@@ -1,11 +1,17 @@
+https://docs.microsoft.com/en-us/azure/aks/tutorial-kubernetes-prepare-app
+
+Create an Azure Container Registry
+
+<acrName> -> VotingAppLiuziyuan
+<acrLoginServer> -> votingappliuziyuan.azurecr.io
+
 1. create Resource Group
 az group create --name VotingResourceGroup --location eastus
 
 2. create Azure Container Registry
 az acr create --resource-group VotingResourceGroup --name VotingAppLiuziyuan --sku Basic
 
-NOTE: please save the output.
-
+NOTE: saved output.
 {
   "adminUserEnabled": false,
   "creationDate": "2018-11-13T08:16:41.667663+00:00",
@@ -25,6 +31,123 @@ NOTE: please save the output.
   "type": "Microsoft.ContainerRegistry/registries"
 }
 
-3. az acr login --name VotingAppLiuziyuan
+3. login
+az acr login --name VotingAppLiuziyuan
 
+4. looking acrLoginServer name
+az acr list --resource-group VotingResourceGroup --query "[].{acrLoginServer:loginServer}" --output table
+
+NOTE: 
+AcrLoginServer
+-----------------------------
+votingappliuziyuan.azurecr.io
+
+5. docker tag
+docker tag azure-vote-front votingappliuziyuan.azurecr.io/azure-vote-front:v1
+
+6. docker push image to azure
+docker push votingappliuziyuan.azurecr.io/azure-vote-front:v1
+
+7. list images in registry
+az acr repository list --name votingappliuziyuan --output table
+
+NOTE: 
+Result
+----------------
+azure-vote-front
+
+8. show tags 
+az acr repository show-tags --name votingappliuziyuan --repository azure-vote-front --output table
+
+NOTE:
+Result
+--------
+v1
+
+Create an Azure Kubernates Cluster
+1. create a service principal
+az ad sp create-for-rbac --skip-assignment
+
+NOTE: saved output
+{
+  "appId": "7a18fa3f-79f9-4bfe-95a2-aecf565a03dc",
+  "displayName": "azure-cli-2018-11-13-08-49-55",
+  "name": "http://azure-cli-2018-11-13-08-49-55",
+  "password": "39443bd1-e363-4d5d-9627-0f0fadfd68e0",
+  "tenant": "91830b70-5976-45a0-958d-5c6c42a62d1e"
+}
+
+2. configure ACR authentication
+az role assignment create --assignee 7a18fa3f-79f9-4bfe-95a2-aecf565a03dc --scope /subscriptions/9f52089d-b469-4d68-a81f-9ee4bc327d02/resourceGroups/VotingResourceGroup/providers/Microsoft.ContainerRegistry/registries/VotingAppLiuziyuan --role Reader
+
+3. create a Kubernetes cluster
+az aks create \
+    --resource-group VotingResourceGroup \
+    --name VotingAKSCluster \
+    --node-count 1 \
+    --service-principal 7a18fa3f-79f9-4bfe-95a2-aecf565a03dc \
+    --client-secret 39443bd1-e363-4d5d-9627-0f0fadfd68e0 \
+    --generate-ssh-keys
+
+4. connect to cluster using kubectl
+az aks get-credentials --resource-group VotingResourceGroup --name VotingAKSCluster
+
+5. to verify the connection to your cluster
+kubectl get nodes
+
+6. config azure-vote-all-in-one-redis.yaml
+containers:
+- name: azure-vote-front
+  image: <acrName>.azurecr.io/azure-vote-front:v1
+
+7. deploy your application
+kubectl apply -f azure-vote-all-in-one-redis.yaml
+
+8. test app
+kubectl get service azure-vote-front --watch
+
+Scale applications
+  Manually scale pods 
+1. look pods 
+kubectl get pods
+
+2. set pod 
+kubectl scale --replicas=5 deployment/azure-vote-front
+
+  Autoscale pods
+1. look kubectl version, need +1.8 version
+az aks show --resource-group VotingResourceGroup --name VotingAKSCluster --query kubernetesVersion
+
+2. set autoscale
+kubectl autoscale deployment azure-vote-front --cpu-percent=50 --min=3 --max=10
+
+3. monitor
+kubectl get hpa 
+
+  Manually scale AKS nodes
+1. set node
+az aks scale --resource-group myResourceGroup --name myAKSCluster --node-count 3
+
+Update application
+1. modify config.file.cfg file
+
+2. udpate local container images
+docker-compose up --build -d
+
+3. Tag and push the image
+docker tag azure-vote-front votingappliuziyuan.azurecr.io/azure-vote-front:v2
+
+if not login acr,command : 
+az acr login --name VotingAppLiuziyuan
+
+docker push votingappliuziyuan.azurecr.io/azure-vote-front:v2
+
+4. update app
+kubectl set image deployment azure-vote-front azure-vote-front=votingappliuziyuan.azurecr.io/azure-vote-front:v2
+
+5. looke pods
+kubectl get pods
+
+6. get app info
+kubectl get service azure-vote-front
 
