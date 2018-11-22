@@ -3,19 +3,20 @@ https://docs.microsoft.com/en-us/azure/aks/jenkins-continuous-deployment?toc=%2F
 1. sh jenkins-tutorial/deploy-jenkins-vm.sh
 
 2. copy whole result
-Open a browser to http://40.68.74.45:8080
+Open a browser to http://104.45.148.101:8080
 Enter the following to Unlock Jenkins:
-2bcce3ea299a4fdc865846410e831dd7
+74f1c8ba26024af188c31ac3e88ea4d4
 
 3. 
 az ad sp create-for-rbac --skip-assignment
 {
-  "appId": "12cdf8c2-4610-4aa6-9c82-9097d9afc40c",
-  "displayName": "azure-cli-2018-11-22-01-47-52",
-  "name": "http://azure-cli-2018-11-22-01-47-52",
-  "password": "f673b261-829d-49f9-98a9-b2055b52d51d",
+  "appId": "91b72ecf-b4ba-4a77-884c-1c4f818e637f",
+  "displayName": "azure-cli-2018-11-22-06-07-36",
+  "name": "http://azure-cli-2018-11-22-06-07-36",
+  "password": "f67978c1-c1f5-43ab-b48e-943f6b733939",
   "tenant": "91830b70-5976-45a0-958d-5c6c42a62d1e"
 }
+
 
 4. az acr show --resource-group VotingResourceGroup --name VotingAppLiuziyuan
 {
@@ -37,13 +38,13 @@ az ad sp create-for-rbac --skip-assignment
   
 
 5. 
-az role assignment create --assignee 12cdf8c2-4610-4aa6-9c82-9097d9afc40c --role Contributor --scope /subscriptions/9f52089d-b469-4d68-a81f-9ee4bc327d02/resourceGroups/VotingResourceGroup/providers/Microsoft.ContainerRegistry/registries/VotingAppLiuziyuan
+az role assignment create --assignee 91b72ecf-b4ba-4a77-884c-1c4f818e637f --role Contributor --scope /subscriptions/9f52089d-b469-4d68-a81f-9ee4bc327d02/resourceGroups/VotingResourceGroup/providers/Microsoft.ContainerRegistry/registries/VotingAppLiuziyuan
 
 {
   "canDelegate": null,
-  "id": "/subscriptions/9f52089d-b469-4d68-a81f-9ee4bc327d02/resourceGroups/VotingResourceGroup/providers/Microsoft.ContainerRegistry/registries/VotingAppLiuziyuan/providers/Microsoft.Authorization/roleAssignments/79bf8437-9889-42b5-b3f0-c60c43403e18",
-  "name": "79bf8437-9889-42b5-b3f0-c60c43403e18",
-  "principalId": "9f7a48df-eedd-46be-ae1c-763851848bbe",
+  "id": "/subscriptions/9f52089d-b469-4d68-a81f-9ee4bc327d02/resourceGroups/VotingResourceGroup/providers/Microsoft.ContainerRegistry/registries/VotingAppLiuziyuan/providers/Microsoft.Authorization/roleAssignments/3e4defba-b66a-4ba1-9576-e46180db609f",
+  "name": "3e4defba-b66a-4ba1-9576-e46180db609f",
+  "principalId": "be9c442b-12b0-4dae-ba57-04c7f8b9b3d9",
   "resourceGroup": "VotingResourceGroup",
   "roleDefinitionId": "/subscriptions/9f52089d-b469-4d68-a81f-9ee4bc327d02/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
   "scope": "/subscriptions/9f52089d-b469-4d68-a81f-9ee4bc327d02/resourceGroups/VotingResourceGroup/providers/Microsoft.ContainerRegistry/registries/VotingAppLiuziyuan",
@@ -51,5 +52,27 @@ az role assignment create --assignee 12cdf8c2-4610-4aa6-9c82-9097d9afc40c --role
 }
 
 
+
 6. git jenkins token
 bac7e449e9466477801caee22e769fce2cc0665d
+
+
+shell
+
+# Build new image and push to ACR.
+ACR_LOGINSERVER="votingappliuziyuan.azurecr.io"
+BUILD_NUMBER="1"
+ACR_ID="VotingAppLiuziyuan"
+ACR_PASSWORD="zgjIi=AqXnoLBxOF=xK3nPx4ck0Q+rkX"
+WEB_IMAGE_NAME="${ACR_LOGINSERVER}/azure-vote-front:v${BUILD_NUMBER}"
+docker-compose build
+docker login ${ACR_LOGINSERVER} -u ${ACR_ID} -p ${ACR_PASSWORD}
+docker tag azure-vote-front $WEB_IMAGE_NAME
+docker push $WEB_IMAGE_NAME
+
+# Update kubernetes deployment with new image.
+ACR_LOGINSERVER="votingappliuziyuan.azurecr.io"
+BUILD_NUMBER="1"
+WEB_IMAGE_NAME="${ACR_LOGINSERVER}/azure-vote-front:v${BUILD_NUMBER}"
+kubectl set image deployment azure-vote-front azure-vote-front=$WEB_IMAGE_NAME --kubeconfig /var/lib/jenkins/config
+
